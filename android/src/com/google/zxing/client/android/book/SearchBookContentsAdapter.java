@@ -26,6 +26,8 @@ import java.util.List;
 
 import ti.barcode.RHelper;
 
+import ti.barcode.RHelper;
+
 /**
  * Manufactures list items which represent SBC results.
  *

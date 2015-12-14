@@ -19,8 +19,8 @@ package com.google.zxing.client.android.share;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
-import android.os.Bundle;
 import android.provider.Browser;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
@@ -31,6 +31,9 @@ import android.widget.ListView;
  * @author dswitkin@google.com (Daniel Switkin)
  */
 public final class BookmarkPickerActivity extends ListActivity {
+
+  private static final String TAG = BookmarkPickerActivity.class.getSimpleName();
+
   private static final String[] BOOKMARK_PROJECTION = {
       Browser.BookmarkColumns.TITLE,
       Browser.BookmarkColumns.URL
@@ -39,24 +42,36 @@ public final class BookmarkPickerActivity extends ListActivity {
   static final int TITLE_COLUMN = 0;
   static final int URL_COLUMN = 1;
 
-  // Without this selection, we'd get all the history entries too
-  private static final String BOOKMARK_SELECTION = "bookmark = 1";
+  private static final String BOOKMARK_SELECTION = 
+      Browser.BookmarkColumns.BOOKMARK + " = 1 AND " + Browser.BookmarkColumns.URL + " IS NOT NULL";
 
-  private Cursor cursor = null;
+  private Cursor cursor;
 
   @Override
-  protected void onCreate(Bundle icicle) {
-    super.onCreate(icicle);
-
+  protected void onResume() {
+    super.onResume();
     cursor = getContentResolver().query(Browser.BOOKMARKS_URI, BOOKMARK_PROJECTION,
         BOOKMARK_SELECTION, null, null);
-    startManagingCursor(cursor);
+    if (cursor == null) {
+      Log.w(TAG, "No cursor returned for bookmark query");
+      finish();
+      return;
+    }
     setListAdapter(new BookmarkAdapter(this, cursor));
+  }
+  
+  @Override
+  protected void onPause() {
+    if (cursor != null) {
+      cursor.close();
+      cursor = null;
+    }
+    super.onPause();
   }
 
   @Override
   protected void onListItemClick(ListView l, View view, int position, long id) {
-    if (cursor.moveToPosition(position)) {
+    if (!cursor.isClosed() && cursor.moveToPosition(position)) {
       Intent intent = new Intent();
       intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
       intent.putExtra(Browser.BookmarkColumns.TITLE, cursor.getString(TITLE_COLUMN));

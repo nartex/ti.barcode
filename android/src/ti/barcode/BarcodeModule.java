@@ -27,13 +27,12 @@ import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
+import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.client.android.CaptureActivity;
 import com.google.zxing.client.android.Intents;
-import com.google.zxing.client.android.PlanarYUVLuminanceSource;
 import com.google.zxing.client.android.PreferencesActivity;
-import com.google.zxing.client.android.camera.CameraConfigurationManager;
 import com.google.zxing.client.result.ParsedResult;
 import com.google.zxing.client.result.ResultParser;
 import com.google.zxing.common.HybridBinarizer;
@@ -118,7 +117,7 @@ public class BarcodeModule extends KrollModule implements TiActivityResultHandle
 		CaptureActivity.getInstance().cancel();
 	}
 
-	@Kroll.method
+	/*@Kroll.method
 	@Kroll.getProperty
 	public boolean getUseFrontCamera() {
 		return new CameraConfigurationManager(getActivity()).getFrontCamera();
@@ -146,7 +145,7 @@ public class BarcodeModule extends KrollModule implements TiActivityResultHandle
 		if (CaptureActivity.getInstance() != null) {
 			CaptureActivity.getInstance().reset();
 		}
-	}
+	}*/
 
 	static final Vector<BarcodeFormat> PRODUCT_FORMATS;
 	static final Vector<BarcodeFormat> ONE_D_FORMATS;
@@ -198,7 +197,7 @@ public class BarcodeModule extends KrollModule implements TiActivityResultHandle
 			Activity activity = TiApplication.getAppCurrentActivity();
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
 			decodeFormats = new Vector<BarcodeFormat>();
-			if (prefs.getBoolean(PreferencesActivity.KEY_DECODE_1D, true)) {
+			if (prefs.getBoolean(PreferencesActivity.KEY_DECODE_1D_INDUSTRIAL, true)) {
 				decodeFormats.addAll(ONE_D_FORMATS);
 			}
 			if (prefs.getBoolean(PreferencesActivity.KEY_DECODE_QR, true)) {
@@ -293,18 +292,10 @@ public class BarcodeModule extends KrollModule implements TiActivityResultHandle
 			intent.putExtra(Intents.Scan.KEEP_OPEN, false);
 		}
 
-		if (!properties.optBoolean("allowInstructions", true)) {
-			disableInstructions();
-		}
-
 		intent.putExtra(Intents.Scan.ALLOW_MENU, properties.optBoolean("allowMenu", true));
-		intent.putExtra(Intents.Scan.ALLOW_INSTRUCTIONS, properties.optBoolean("allowInstructions", true));
-		
+		intent.putExtra(Intents.Scan.ALLOW_INSTRUCTIONS, properties.optBoolean("allowInstructions", true));		
 		intent.putExtra(Intents.Scan.PROMPT_MESSAGE, properties.optString("displayedMessage", null));
-
-		// [MOD-217] -- Must set the package in order for it to automatically select the application as the source of the scanning activity.
 		intent.setPackage(TiApplication.getInstance().getPackageName());
-		CaptureActivity.PACKAGE_NAME = TiApplication.getInstance().getPackageName();
 
 		Activity activity = TiApplication.getAppCurrentActivity();
 		TiActivitySupport activitySupport = (TiActivitySupport) activity;
@@ -312,15 +303,6 @@ public class BarcodeModule extends KrollModule implements TiActivityResultHandle
 		activitySupport.launchActivityForResult(intent, resultCode, this);
 	}
 
-	private void disableInstructions() {
-		try {
-			PackageInfo info = getActivity().getPackageManager().getPackageInfo(TiApplication.getInstance().getPackageName(), 0);
-			PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putInt(PreferencesActivity.KEY_HELP_VERSION_SHOWN, info.versionCode)
-					.commit();
-		} catch (NameNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
 
 	@Override
 	public void onError(Activity activity, int requestCode, Exception e) {

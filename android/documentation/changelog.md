@@ -1,5 +1,7 @@
 # Change Log
 <pre>
+v3.0.0  Use ZXing v3.2.2
+
 v2.3.4  [MOD-1265] Open sourcing
 	
 v2.3.3  [MOD-1087][MOD-1104] Updating attribution and building with 2.1.3.GA to support x86 devices

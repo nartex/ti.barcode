@@ -7,7 +7,7 @@ Barcode.allowRotation = true;
 Barcode.displayedMessage = ' ';
 Barcode.allowMenu = false;
 Barcode.allowInstructions = false;
-Barcode.useLED = true;
+//Barcode.useLED = true;
 
 var window = Ti.UI.createWindow({
     backgroundColor: 'white'
@@ -27,7 +27,7 @@ var overlay = Ti.UI.createView({
     backgroundColor: 'transparent',
     top: 0, right: 0, bottom: 0, left: 0
 });
-var switchButton = Ti.UI.createButton({
+/*var switchButton = Ti.UI.createButton({
     title: Barcode.useFrontCamera ? 'Back Camera' : 'Front Camera',
     textAlign: 'center',
     color: '#000', backgroundColor: '#fff', style: 0,
@@ -41,7 +41,7 @@ switchButton.addEventListener('click', function () {
     Barcode.useFrontCamera = !Barcode.useFrontCamera;
     switchButton.title = Barcode.useFrontCamera ? 'Back Camera' : 'Front Camera';
 });
-overlay.add(switchButton);
+overlay.add(switchButton);*/
 var cancelButton = Ti.UI.createButton({
     title: 'Cancel', textAlign: 'center',
     color: '#000', backgroundColor: '#fff', style: 0,

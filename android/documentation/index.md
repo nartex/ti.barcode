@@ -88,12 +88,10 @@ Whether or not to display helpful instructions or a changelog when the app is up
 ### displayedMessage[string]
 Controls the message that is displayed to the end user when they are capturing a barcode.
                                                                                          
-### useFrontCamera[boolean, defaults to false]
-Controls whether or not the front camera on the device will be used to capture barcodes. On Android, this requires API
-level 9 (Android OS 2.3) or higher. If no front camera is available, this will gracefully fall back to utilize whatever
-camera is available.
+### useFrontCamera[boolean, defaults to false, iOS only]
+Controls whether or not the front camera on the device will be used to capture barcodes.
 
-### useLED[boolean, defaults to false]
+### useLED[boolean, defaults to false, iOS only]
 Whether or not to use the LED when scanning barcodes (also known as the flashlight, torch, or some derivation thereof).
 
 ## Barcode Result Type Constants

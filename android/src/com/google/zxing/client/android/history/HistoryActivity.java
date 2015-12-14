@@ -19,29 +19,32 @@ package com.google.zxing.client.android.history;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import com.google.zxing.client.android.CaptureActivity;
 import com.google.zxing.client.android.Intents;
 import ti.barcode.RHelper;
 
-import java.util.List;
-
 public final class HistoryActivity extends ListActivity {
 
-  private static final int SEND_ID = Menu.FIRST;
-  private static final int CLEAR_ID = Menu.FIRST + 1;
+  private static final String TAG = HistoryActivity.class.getSimpleName();
 
   private HistoryManager historyManager;
-  private HistoryItemAdapter adapter;
+  private ArrayAdapter<HistoryItem> adapter;
+  private CharSequence originalTitle;
   
   @Override
   protected void onCreate(Bundle icicle) {
@@ -49,18 +52,24 @@ public final class HistoryActivity extends ListActivity {
     this.historyManager = new HistoryManager(this);  
     adapter = new HistoryItemAdapter(this);
     setListAdapter(adapter);
-    ListView listview = getListView();
+    View listview = getListView();
     registerForContextMenu(listview);
+    originalTitle = getTitle();
   }
 
   @Override
   protected void onResume() {
     super.onResume();
-    List<HistoryItem> items = historyManager.buildHistoryItems();
+    reloadHistoryItems();
+  }
+
+  private void reloadHistoryItems() {
+    Iterable<HistoryItem> items = historyManager.buildHistoryItems();
     adapter.clear();
     for (HistoryItem item : items) {
       adapter.add(item);
     }
+    setTitle(originalTitle + " (" + adapter.getCount() + ')');
     if (adapter.isEmpty()) {
       adapter.add(new HistoryItem(null, null, null));
     }
@@ -81,69 +90,71 @@ public final class HistoryActivity extends ListActivity {
                                   View v,
                                   ContextMenu.ContextMenuInfo menuInfo) {
     int position = ((AdapterView.AdapterContextMenuInfo) menuInfo).position;
-    menu.add(Menu.NONE, position, position, RHelper.getString("history_clear_one_history_text"));
+    if (position >= adapter.getCount() || adapter.getItem(position).getResult() != null) {
+      menu.add(Menu.NONE, position, position, RHelper.getString("history_clear_one_history_text"));
+    } // else it's just that dummy "Empty" message
   }
 
   @Override
   public boolean onContextItemSelected(MenuItem item) {
     int position = item.getItemId();
     historyManager.deleteHistoryItem(position);
-    finish();
+    reloadHistoryItems();
     return true;
   }
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
-    super.onCreateOptionsMenu(menu);
     if (historyManager.hasHistoryItems()) {
-      menu.add(0, SEND_ID, 0, RHelper.getString("history_send")).setIcon(RHelper.getString("history_clear_text"));
-      menu.add(0, CLEAR_ID, 0, RHelper.getString("history_clear_text")).setIcon(RHelper.getString("msg_unmount_usb"));
-      return true;
+      MenuInflater menuInflater = getMenuInflater();
+      menuInflater.inflate(RHelper.getMenu("history"), menu);
     }
-    return false;
+    return super.onCreateOptionsMenu(menu);
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case SEND_ID:
-        CharSequence history = historyManager.buildHistory();
-        Uri historyFile = HistoryManager.saveHistory(history.toString());
-        if (historyFile == null) {
-          AlertDialog.Builder builder = new AlertDialog.Builder(this);
-          builder.setMessage(RHelper.getString("msg_unmount_usb"));
-          builder.setPositiveButton(RHelper.getString("button_ok"), null);
-          builder.show();
-        } else {
-          Intent intent = new Intent(Intent.ACTION_SEND, Uri.parse("mailto:"));
-          intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-          String subject = getResources().getString(RHelper.getString("history_email_title"));
-          intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-          intent.putExtra(Intent.EXTRA_TEXT, subject);
-          intent.putExtra(Intent.EXTRA_STREAM, historyFile);
-          intent.setType("text/csv");
-          startActivity(intent);
-        }
-        break;
-      case CLEAR_ID:
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(RHelper.getString("msg_sure"));
-        builder.setCancelable(true);
-        builder.setPositiveButton(RHelper.getString("button_ok"), new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int i2) {
-            historyManager.clearHistory();
-            dialog.dismiss();
-            finish();
-          }
-        });
-        builder.setNegativeButton(RHelper.getString("button_cancel"), null);
-        builder.show();
-        break;
-      default:
-        return super.onOptionsItemSelected(item);
-    }
-    return true;
+	  if (item.getItemId() == RHelper.getId("menu_history_send")){
+		  CharSequence history = historyManager.buildHistory();
+	        Parcelable historyFile = HistoryManager.saveHistory(history.toString());
+	        if (historyFile == null) {
+	          AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	          builder.setMessage(RHelper.getString("msg_unmount_usb"));
+	          builder.setPositiveButton(RHelper.getString("button_ok"), null);
+	          builder.show();
+	        } else {
+	          Intent intent = new Intent(Intent.ACTION_SEND, Uri.parse("mailto:"));
+	          intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+	          String subject = getResources().getString(RHelper.getString("history_email_title"));
+	          intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+	          intent.putExtra(Intent.EXTRA_TEXT, subject);
+	          intent.putExtra(Intent.EXTRA_STREAM, historyFile);
+	          intent.setType("text/csv");
+	          try {
+	            startActivity(intent);
+	          } catch (ActivityNotFoundException anfe) {
+	            Log.w(TAG, anfe.toString());
+	          }
+	        }
+	  }else if (item.getItemId() == RHelper.getId("menu_history_clear_text")){
+		  AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	        builder.setMessage(RHelper.getString("msg_sure"));
+	        builder.setCancelable(true);
+	        builder.setPositiveButton(RHelper.getString("button_ok"), new DialogInterface.OnClickListener() {
+	          @Override
+	          public void onClick(DialogInterface dialog, int i2) {
+	            historyManager.clearHistory();
+	            dialog.dismiss();
+	            finish();
+	          }
+	        });
+	        builder.setNegativeButton(RHelper.getString("button_cancel"), null);
+	        builder.show();
+	  }else{
+		  return super.onOptionsItemSelected(item);
+	  }
+	  
+	  return true;    
   }
 
 }

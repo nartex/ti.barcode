@@ -73,4 +73,85 @@ public class RHelper {
 			return 0;
 		}
 	}
+	
+	public static int getMenu(String str) {
+		try {
+			return TiRHelper.getApplicationResource("menu." + str);
+		} catch (ResourceNotFoundException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+	
+	public static int getAndroidString(String str) {
+		try {
+			return TiRHelper.getAndroidResource("string." + str);
+		} catch (ResourceNotFoundException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	public static int getAndroidLayout(String str) {
+		try {
+			return TiRHelper.getAndroidResource("layout." + str);
+		} catch (ResourceNotFoundException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	public static int getAndroidId(String str) {
+		try {
+			return TiRHelper.getAndroidResource("id." + str);
+		} catch (ResourceNotFoundException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	public static int getAndroidDrawable(String str) {
+		try {
+			return TiRHelper.getAndroidResource("drawable." + str);
+		} catch (ResourceNotFoundException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	public static int getAndroidColor(String str) {
+		try {
+			return TiRHelper.getAndroidResource("color." + str);
+		} catch (ResourceNotFoundException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	public static int getAndroidRaw(String str) {
+		try {
+			return TiRHelper.getAndroidResource("raw." + str);
+		} catch (ResourceNotFoundException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	public static int getAndroidXML(String str) {
+		try {
+			return TiRHelper.getAndroidResource("xml." + str);
+		} catch (ResourceNotFoundException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+	
+	public static int getAndroidMenu(String str) {
+		try {
+			return TiRHelper.getAndroidResource("menu." + str);
+		} catch (ResourceNotFoundException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
 }
