@@ -129,6 +129,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   
   private FrameLayout _layout;
   private boolean _allowMenu;
+  private boolean _hasShowInstruction;
   
   public void cancel() {
 	setResult(RESULT_CANCELED);
@@ -153,6 +154,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
     Window window = getWindow();
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    
+    getActionBar().setDisplayHomeAsUpEnabled(true);
     
     _layout = (FrameLayout) View.inflate(this, RHelper.getLayout("capture"), null);
     setContentView(_layout);
@@ -244,7 +247,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         
 		viewfinderView.setShowRectangle(intent.getBooleanExtra(Intents.Scan.SHOW_RECTANGLE, true));
 		_allowMenu = intent.getBooleanExtra(Intents.Scan.ALLOW_MENU, true);
-		if (intent.getBooleanExtra(Intents.Scan.ALLOW_INSTRUCTIONS, true)) {
+		if (!_hasShowInstruction && intent.getBooleanExtra(Intents.Scan.ALLOW_INSTRUCTIONS, true)) {
+			_hasShowInstruction = true;
 			Intent helpIntent = new Intent(this, HelpActivity.class);
 			helpIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 			startActivity(helpIntent);
@@ -403,24 +407,28 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    Intent intent = new Intent(Intent.ACTION_VIEW);
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-    if (item.getItemId() == RHelper.getId("menu_share")){
-    	intent.setClassName(this, ShareActivity.class.getName());
-        startActivity(intent);
-    }else if (item.getItemId() == RHelper.getId("menu_history")){
-    	intent.setClassName(this, HistoryActivity.class.getName());
-        startActivityForResult(intent, HISTORY_REQUEST_CODE);
-    }else if (item.getItemId() == RHelper.getId("menu_settings")){
-    	intent.setClassName(this, PreferencesActivity.class.getName());
-        startActivity(intent);
-    }else if (item.getItemId() == RHelper.getId("menu_help")){
-    	intent.setClassName(this, HelpActivity.class.getName());
-        startActivity(intent);
-    }else{
-    	return super.onOptionsItemSelected(item);
-    }
-    
+	if (item.getItemId() == RHelper.getAndroidId("home")){
+		setResult(RESULT_CANCELED);
+		finish();
+	}else{
+		Intent intent = new Intent(Intent.ACTION_VIEW);
+	    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+	    if (item.getItemId() == RHelper.getId("menu_share")){
+	    	intent.setClassName(this, ShareActivity.class.getName());
+	        startActivity(intent);
+	    }else if (item.getItemId() == RHelper.getId("menu_history")){
+	    	intent.setClassName(this, HistoryActivity.class.getName());
+	        startActivityForResult(intent, HISTORY_REQUEST_CODE);
+	    }else if (item.getItemId() == RHelper.getId("menu_settings")){
+	    	intent.setClassName(this, PreferencesActivity.class.getName());
+	        startActivity(intent);
+	    }else if (item.getItemId() == RHelper.getId("menu_help")){
+	    	intent.setClassName(this, HelpActivity.class.getName());
+	        startActivity(intent);
+	    }else{
+	    	return super.onOptionsItemSelected(item);
+	    }  
+	}
     return true;
   }
 

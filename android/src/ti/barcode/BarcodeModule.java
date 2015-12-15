@@ -76,7 +76,7 @@ public class BarcodeModule extends KrollModule implements TiActivityResultHandle
 	public static final int WIFI = 10;
 
 	private static final String[] FORMAT_STRINGS = new String[] { "NONE", "QR_CODE", "DATA_MATRIX", "UPC_E", "UPC_A", "EAN_8", "EAN_13", "CODE_128",
-			"CODE_39", "ITF" };
+			"CODE_39", "ITF", "CODABAR",  "AZTEC", "PDF_417", "RSS_14", "RSS_EXPANDED"};
 
 	@Kroll.constant
 	public static final int FORMAT_NONE = 0;
@@ -98,6 +98,16 @@ public class BarcodeModule extends KrollModule implements TiActivityResultHandle
 	public static final int FORMAT_CODE_39 = 8;
 	@Kroll.constant
 	public static final int FORMAT_ITF = 9;
+	@Kroll.constant
+	public static final int FORMAT_CODABAR = 10;
+	@Kroll.constant
+	public static final int FORMAT_AZTEC = 11;
+	@Kroll.constant
+	public static final int FORMAT_PDF_417 = 12;
+	@Kroll.constant
+	public static final int FORMAT_RSS_14 = 13;
+	@Kroll.constant
+	public static final int FORMAT_RSS_EXPANDED = 14;
 
 	public BarcodeModule() {
 		super();
@@ -151,6 +161,8 @@ public class BarcodeModule extends KrollModule implements TiActivityResultHandle
 	static final Vector<BarcodeFormat> ONE_D_FORMATS;
 	static final Vector<BarcodeFormat> QR_CODE_FORMATS;
 	static final Vector<BarcodeFormat> DATA_MATRIX_FORMATS;
+	static final Vector<BarcodeFormat> AZTEC_FORMATS;
+	static final Vector<BarcodeFormat> PDF_417_FORMATS;
 	static {
 		PRODUCT_FORMATS = new Vector<BarcodeFormat>(5);
 		PRODUCT_FORMATS.add(BarcodeFormat.UPC_A);
@@ -158,16 +170,22 @@ public class BarcodeModule extends KrollModule implements TiActivityResultHandle
 		PRODUCT_FORMATS.add(BarcodeFormat.EAN_13);
 		PRODUCT_FORMATS.add(BarcodeFormat.EAN_8);
 		PRODUCT_FORMATS.add(BarcodeFormat.RSS_14);
-		ONE_D_FORMATS = new Vector<BarcodeFormat>(PRODUCT_FORMATS.size() + 4);
+		PRODUCT_FORMATS.add(BarcodeFormat.RSS_EXPANDED);
+		ONE_D_FORMATS = new Vector<BarcodeFormat>(PRODUCT_FORMATS.size() + 5);
 		ONE_D_FORMATS.addAll(PRODUCT_FORMATS);
 		ONE_D_FORMATS.add(BarcodeFormat.CODE_39);
 		ONE_D_FORMATS.add(BarcodeFormat.CODE_93);
 		ONE_D_FORMATS.add(BarcodeFormat.CODE_128);
 		ONE_D_FORMATS.add(BarcodeFormat.ITF);
+		ONE_D_FORMATS.add(BarcodeFormat.CODABAR);
 		QR_CODE_FORMATS = new Vector<BarcodeFormat>(1);
 		QR_CODE_FORMATS.add(BarcodeFormat.QR_CODE);
 		DATA_MATRIX_FORMATS = new Vector<BarcodeFormat>(1);
 		DATA_MATRIX_FORMATS.add(BarcodeFormat.DATA_MATRIX);
+		AZTEC_FORMATS = new Vector<BarcodeFormat>(1);
+		AZTEC_FORMATS.add(BarcodeFormat.AZTEC);
+		PDF_417_FORMATS = new Vector<BarcodeFormat>(1);
+		PDF_417_FORMATS.add(BarcodeFormat.PDF_417);
 	}
 
 	// Inspired in large part by:
@@ -205,6 +223,12 @@ public class BarcodeModule extends KrollModule implements TiActivityResultHandle
 			}
 			if (prefs.getBoolean(PreferencesActivity.KEY_DECODE_DATA_MATRIX, true)) {
 				decodeFormats.addAll(DATA_MATRIX_FORMATS);
+			}
+			if (prefs.getBoolean(PreferencesActivity.KEY_DECODE_AZTEC, true)) {
+				decodeFormats.addAll(AZTEC_FORMATS);
+			}
+			if (prefs.getBoolean(PreferencesActivity.KEY_DECODE_PDF417, true)) {
+				decodeFormats.addAll(PDF_417_FORMATS);
 			}
 		}
 		hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
@@ -278,9 +302,11 @@ public class BarcodeModule extends KrollModule implements TiActivityResultHandle
 					for (Object acceptedFormat : acceptedFormats) {
 						formats += FORMAT_STRINGS[TiConvert.toInt(acceptedFormat)] + ",";
 					}
-					Log.i(LCAT, formats.substring(0, formats.length() - 1));
+					Log.i(LCAT, "acceptedFormats: " + formats.substring(0, formats.length() - 1));
 					intent.putExtra(Intents.Scan.FORMATS, formats.substring(0, formats.length() - 1));
 				}
+			}else{
+				Log.i(LCAT, "acceptedFormats: DEFAULT");
 			}
 
 			intent.putExtra(Intents.Scan.SHOW_RECTANGLE, argsDict.optBoolean("showRectangle", true));

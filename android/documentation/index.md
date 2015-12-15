@@ -138,6 +138,11 @@ Value representing wifi connection settings
 ### FORMAT_CODE_128[int]
 ### FORMAT_CODE_39[int]
 ### FORMAT_ITF[int]
+### FORMAT_CODABAR[int]
+### FORMAT_AZTEC[int]
+### FORMAT_PDF_417[int]
+### FORMAT_RSS_14[int]
+### FORMAT_RSS_EXPANDED[int]
 
 ## Usage
 See example.
